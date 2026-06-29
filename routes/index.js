@@ -40,7 +40,8 @@ router.patch ("/fee-not-generated/:id/status", feeNotGeneratedCtrl.updateStatus)
 
 // ─────────────────────────────────────────────
 // Sub-module 4: Transaction Logs
-// GET    /api/transaction-logs         → JSON logs (filters: log_type, student_id, from_date, to_date, page, limit)
+// GET    /api/transaction-logs       
+//   → JSON logs (filters: log_type, student_id, from_date, to_date, page, limit)
 // GET    /api/transaction-logs/export  → Download Excel file (all 4 sheets)
 // ─────────────────────────────────────────────
 router.get("/transaction-logs/export", transactionLogsCtrl.exportExcel);  // must be before /:id
