@@ -1,0 +1,43 @@
+const service = require("../services/feeNotGenerated.service");
+
+const getAll = async (req, res) => {
+  try {
+    const result = await service.getAllFeeNotGenerated(req.query);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+const getById = async (req, res) => {
+  try {
+    const record = await service.getFeeNotGeneratedById(req.params.id);
+    if (!record) return res.status(404).json({ success: false, message: "Record not found" });
+    res.json({ success: true, data: record });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+const create = async (req, res) => {
+  try {
+    const record = await service.createFeeNotGenerated(req.body);
+    res.status(201).json({ success: true, data: record });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+const updateStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ success: false, message: "status is required" });
+    const record = await service.updateFeeNotGeneratedStatus(req.params.id, status);
+    if (!record) return res.status(404).json({ success: false, message: "Record not found" });
+    res.json({ success: true, data: record });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+module.exports = { getAll, getById, create, updateStatus };
