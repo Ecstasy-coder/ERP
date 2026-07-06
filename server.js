@@ -1,44 +1,51 @@
-require("dotenv").config();
-const express    = require("express");
-const cors       = require("cors");
-const morgan     = require("morgan");
+﻿const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
 
-const routes                   = require("./routes/index");
-const { errorHandler, notFound } = require("./middlewares/errorHandler");
+const meetingRoutes = require('./routes/meetingRoutes');
 
-const app  = express();
-const PORT = process.env.PORT || 3000;
-
-// ── Middleware ─────────────────────────────────
+const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan("dev"));
 
-// ── Health check ───────────────────────────────
-app.get("/health", (req, res) => {
-  res.json({ status: "OK", timestamp: new Date().toISOString() });
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views');
+app.use('/static', express.static(__dirname + '/public'));
+
+const branches = [
+  { id: 1, name: 'Ecstasy School 1 (ECS001)' },
+  { id: 2, name: 'Ecstasy School 2 (ECS002)' },
+  { id: 3, name: 'North Campus' },
+];
+
+const classes = ['All', 'Class 1', 'Class 2', 'Class 3', 'Class 4'];
+const sections = ['All', 'A', 'B', 'C'];
+
+app.use('/api/meetings', meetingRoutes);
+
+app.get('/meetings/calendar', (req, res) => {
+  res.render('calendar', { branches });
 });
 
-// ── Fee Module Routes ──────────────────────────
-app.use("/api", routes);
-
-// ── 404 + Error Handlers ───────────────────────
-app.use(notFound);
-app.use(errorHandler);
-
-// ── Start ──────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n🚀 Fee Module Server running on http://localhost:${PORT}`);
-  console.log(`\n📋 Available endpoints:`);
-  console.log(`   GET  /api/invalid-fee-data`);
-  console.log(`   POST /api/invalid-fee-data`);
-  console.log(`   GET  /api/invalid-fee-totals`);
-  console.log(`   GET  /api/fee-not-generated`);
-  console.log(`   POST /api/fee-not-generated`);
-  console.log(`   GET  /api/transaction-logs`);
-  console.log(`   GET  /api/transaction-logs/export  ← Excel download\n`);
+app.get('/meetings/new', (req, res) => {
+  res.render('schedule', { branches, classes, sections });
 });
 
-module.exports = app;
+app.get('/api/branches', (req, res) => {
+  res.json(branches);
+});
 
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
