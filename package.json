@@ -1,17 +1,21 @@
 {
-  "name": "erp-calendar",
+  "name": "fee-module-backend",
   "version": "1.0.0",
-  "description": "Meeting scheduler backend for ERP calendar",
+  "description": "Fee Module Backend - Invalid Fee Data, Totals, Fee Not Generated, Transaction Logs",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "init-db": "node test.js"
+    "dev": "nodemon server.js"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^17.4.2",
-    "ejs": "^6.0.1",
-    "express": "^4.18.4",
-    "pg": "^8.22.0"
+    "express": "^4.18.2",
+    "pg": "^8.11.3", 
+    "exceljs": "^4.4.0",
+    "dotenv": "^16.3.1",
+    "morgan": "^1.10.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }
