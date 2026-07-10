@@ -1,0 +1,16 @@
+module.exports = {
+  SERVER_RUNNING: "Server is running",
+  DATA_FETCHED: "Data fetched successfully",
+  DATA_CREATED: "Data created successfully",
+  DATA_UPDATED: "Data updated successfully",
+  DATA_DELETED: "Data deleted successfully",
+  INTERNAL_SERVER_ERROR: "Internal Server Error",
+  UNAUTHORIZED: "Unauthorized Access",
+  CLASS_NOT_FOUND: "Class not found",
+  CLASS_CODE_EXISTS: "Class code already exists",
+  CLASS_NAME_EXISTS: "Class name already exists",
+  DUPLICATE_ASSIGNMENT: "Teacher assignment already exists",
+  CLASS_TEACHER_ASSIGNMENT_EXISTS: "Teacher assignment already exists for the selected class, section, and subject",
+  DUPLICATE_ATTENDANCE: "Attendance already marked for this student and date",
+  OVERLAPPING_TIMETABLE: "Timetable overlaps with an existing period",
+};
