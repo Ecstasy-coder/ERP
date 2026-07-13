@@ -1,0 +1,395 @@
+{
+  "info": {
+    "_postman_id": "erp-solutions-collection",
+    "name": "ERP Solutions API",
+    "description": "Complete API testing collection for Student Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/",
+          "host": ["{{base_url}}"],
+          "path": [""]
+        }
+      }
+    },
+    {
+      "name": "Students",
+      "item": [
+        {
+          "name": "Create Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branch\": \"Computer Science\",\n  \"register_no\": \"CS001\",\n  \"full_name\": \"John Doe\",\n  \"gender\": \"Male\",\n  \"primary_mobile\": \"9876543210\",\n  \"secondary_mobile\": \"9876543211\",\n  \"primary_email\": \"john@example.com\",\n  \"secondary_email\": \"john.doe@example.com\",\n  \"dob\": \"2005-01-15\",\n  \"aadhaar_number\": \"123456789012\",\n  \"admission_date\": \"2023-06-01\",\n  \"current_academic_year\": \"2023-2024\",\n  \"current_class\": \"3rd Year\",\n  \"current_section\": \"A\",\n  \"address\": \"123 Main Street, City\",\n  \"caste\": \"General\",\n  \"sub_caste\": \"N/A\",\n  \"admission_academic_year\": \"2023-2024\",\n  \"admission_class\": \"1st Year\",\n  \"father_name\": \"James Doe\",\n  \"father_qualification\": \"B.Tech\",\n  \"father_occupation\": \"Engineer\",\n  \"mother_name\": \"Jane Doe\",\n  \"mother_qualification\": \"B.A\",\n  \"mother_occupation\": \"Teacher\",\n  \"sibling_details\": [{\"name\": \"Alex Doe\", \"age\": 18}],\n  \"first_language\": \"English\",\n  \"second_language\": \"Hindi\",\n  \"third_language\": \"Spanish\",\n  \"other_details\": \"No specific notes\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/students",
+              "host": ["{{base_url}}"],
+              "path": ["api", "students"]
+            }
+          }
+        },
+        {
+          "name": "Get All Students",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/students?page=1&limit=10&search=&branch=&className=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "students"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "branch",
+                  "value": ""
+                },
+                {
+                  "key": "className",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Student by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/students/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "students", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Student",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Updated\",\n  \"gender\": \"Male\",\n  \"primary_mobile\": \"9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/students/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "students", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Student",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/students/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "students", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "Create Employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Robert\",\n  \"lastName\": \"Smith\",\n  \"gender\": \"Male\",\n  \"phone\": \"9876543210\",\n  \"email\": \"robert@example.com\",\n  \"role\": \"Teacher\",\n  \"salary\": 50000,\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/employee",
+              "host": ["{{base_url}}"],
+              "path": ["api", "employee"]
+            }
+          }
+        },
+        {
+          "name": "Get All Employees",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/employee?page=1&limit=10&search=&role=&status=&branch=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "employee"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "role",
+                  "value": ""
+                },
+                {
+                  "key": "status",
+                  "value": ""
+                },
+                {
+                  "key": "branch",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Employee by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/employee/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "employee", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Attenders (from Employee)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/employee/attenders?page=1&limit=10&search=&branch=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "employee", "attenders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "branch",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Employee",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Robert\",\n  \"lastName\": \"Johnson\",\n  \"gender\": \"Male\",\n  \"phone\": \"9876543210\",\n  \"secondary_mobile\": \"9876543211\",\n  \"email\": \"robert.j@example.com\",\n  \"secondary_email\": \"robert.johnson@example.com\",\n  \"dob\": \"1990-05-20\",\n  \"aadhaar_number\": \"123456789012\",\n  \"address\": \"456 Oak Street\",\n  \"employee_type\": \"Full-time\",\n  \"designation\": \"Senior Teacher\",\n  \"role\": \"Teacher\",\n  \"salary\": 55000,\n  \"joining_date\": \"2020-01-15\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/employee/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "employee", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Employee",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/employee/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "employee", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attenders",
+      "item": [
+        {
+          "name": "Create Attender",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Garcia\",\n  \"gender\": \"Female\",\n  \"phone\": \"9876543210\",\n  \"email\": \"maria@example.com\",\n  \"role\": \"Attender\",\n  \"salary\": 15000,\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/attenders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "attenders"]
+            }
+          }
+        },
+        {
+          "name": "Create Aaya",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Priya\",\n  \"lastName\": \"Sharma\",\n  \"gender\": \"Female\",\n  \"phone\": \"9876543212\",\n  \"email\": \"priya@example.com\",\n  \"role\": \"Aaya\",\n  \"salary\": 12000,\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/attenders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "attenders"]
+            }
+          }
+        },
+        {
+          "name": "Get All Attenders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/attenders?page=1&limit=10&search=&role=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "attenders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "role",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Attender by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/attenders/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "attenders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Attender",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Garcia\",\n  \"gender\": \"Female\",\n  \"phone\": \"9876543210\",\n  \"email\": \"maria@example.com\",\n  \"role\": \"Aaya\",\n  \"salary\": 16000,\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/attenders/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "attenders", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Attender",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/attenders/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "attenders", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    }
+  ]
+}

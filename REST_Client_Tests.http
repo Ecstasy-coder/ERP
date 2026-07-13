@@ -1,0 +1,268 @@
+@base_url = http://localhost:5000
+
+### Health Check - API Running
+GET {{base_url}}/
+
+###
+
+## ==================== STUDENTS ====================
+
+### Create Student
+POST {{base_url}}/api/students
+Content-Type: application/json
+
+{
+  "branch": "Computer Science",
+  "register_no": "CS001",
+  "full_name": "John Doe",
+  "gender": "Male",
+  "primary_mobile": "9876543210",
+  "secondary_mobile": "9876543211",
+  "primary_email": "john@example.com",
+  "secondary_email": "john.doe@example.com",
+  "dob": "2005-01-15",
+  "aadhaar_number": "123456789012",
+  "admission_date": "2023-06-01",
+  "current_academic_year": "2023-2024",
+  "current_class": "3rd Year",
+  "current_section": "A",
+  "address": "123 Main Street, City",
+  "caste": "General",
+  "sub_caste": "N/A",
+  "admission_academic_year": "2023-2024",
+  "admission_class": "1st Year",
+  "father_name": "James Doe",
+  "father_qualification": "B.Tech",
+  "father_occupation": "Engineer",
+  "mother_name": "Jane Doe",
+  "mother_qualification": "B.A",
+  "mother_occupation": "Teacher",
+  "sibling_details": [{"name": "Alex Doe", "age": 18}],
+  "first_language": "English",
+  "second_language": "Hindi",
+  "third_language": "Spanish",
+  "other_details": "No specific notes",
+  "is_active": true
+}
+
+### Get All Students
+GET {{base_url}}/api/students?page=1&limit=10
+
+### Get All Students - Search
+GET {{base_url}}/api/students?page=1&limit=10&search=John
+
+### Get All Students - Filter by Branch
+GET {{base_url}}/api/students?page=1&limit=10&branch=Computer%20Science
+
+### Get Student by ID
+GET {{base_url}}/api/students/1
+
+### Update Student
+PUT {{base_url}}/api/students/1
+Content-Type: application/json
+
+{
+  "full_name": "John Updated",
+  "gender": "Male",
+  "primary_mobile": "9876543210"
+}
+
+### Delete Student
+DELETE {{base_url}}/api/students/1
+
+###
+
+## ==================== EMPLOYEES ====================
+
+### Create Employee
+POST {{base_url}}/api/employee
+Content-Type: application/json
+
+{
+  "firstName": "Robert",
+  "lastName": "Smith",
+  "gender": "Male",
+  "phone": "9876543210",
+  "email": "robert@example.com",
+  "role": "Teacher",
+  "salary": 50000,
+  "status": "active"
+}
+
+### Create Another Employee
+POST {{base_url}}/api/employee
+Content-Type: application/json
+
+{
+  "firstName": "Sarah",
+  "lastName": "Johnson",
+  "gender": "Female",
+  "phone": "9876543211",
+  "email": "sarah@example.com",
+  "role": "Principal",
+  "salary": 75000,
+  "status": "active"
+}
+
+### Get All Employees
+GET {{base_url}}/api/employee?page=1&limit=10
+
+### Get All Employees - Search
+GET {{base_url}}/api/employee?page=1&limit=10&search=Robert
+
+### Get All Employees - Filter by Role
+GET {{base_url}}/api/employee?page=1&limit=10&role=Teacher
+
+### Get All Employees - Filter by Status
+GET {{base_url}}/api/employee?page=1&limit=10&status=active
+
+### Get Employee by ID
+GET {{base_url}}/api/employee/1
+
+### Get Attenders/Aaya from Employee Endpoint
+GET {{base_url}}/api/employee/attenders?page=1&limit=10
+
+### Update Employee
+PUT {{base_url}}/api/employee/1
+Content-Type: application/json
+
+{
+  "firstName": "Robert",
+  "lastName": "Johnson",
+  "gender": "Male",
+  "phone": "9876543210",
+  "secondary_mobile": "9876543211",
+  "email": "robert.j@example.com",
+  "secondary_email": "robert.johnson@example.com",
+  "dob": "1990-05-20",
+  "aadhaar_number": "123456789012",
+  "address": "456 Oak Street",
+  "employee_type": "Full-time",
+  "designation": "Senior Teacher",
+  "role": "Teacher",
+  "salary": 55000,
+  "joining_date": "2020-01-15",
+  "status": "active"
+}
+
+### Delete Employee
+DELETE {{base_url}}/api/employee/1
+
+###
+
+## ==================== ATTENDERS ====================
+
+### Create Attender
+POST {{base_url}}/api/attenders
+Content-Type: application/json
+
+{
+  "firstName": "Maria",
+  "lastName": "Garcia",
+  "gender": "Female",
+  "phone": "9876543210",
+  "email": "maria@example.com",
+  "role": "Attender",
+  "salary": 15000,
+  "status": "active"
+}
+
+### Create Aaya
+POST {{base_url}}/api/attenders
+Content-Type: application/json
+
+{
+  "firstName": "Priya",
+  "lastName": "Sharma",
+  "gender": "Female",
+  "phone": "9876543212",
+  "email": "priya@example.com",
+  "role": "Aaya",
+  "salary": 12000,
+  "status": "active"
+}
+
+### Get All Attenders
+GET {{base_url}}/api/attenders?page=1&limit=10
+
+### Get All Attenders - Filter by Role
+GET {{base_url}}/api/attenders?page=1&limit=10&role=Attender
+
+### Get All Aaya
+GET {{base_url}}/api/attenders?page=1&limit=10&role=Aaya
+
+### Get All Attenders - Search
+GET {{base_url}}/api/attenders?page=1&limit=10&search=Maria
+
+### Get Attender by ID
+GET {{base_url}}/api/attenders/1
+
+### Update Attender
+PUT {{base_url}}/api/attenders/1
+Content-Type: application/json
+
+{
+  "firstName": "Maria",
+  "lastName": "Garcia",
+  "gender": "Female",
+  "phone": "9876543210",
+  "email": "maria@example.com",
+  "role": "Aaya",
+  "salary": 16000,
+  "status": "active"
+}
+
+### Delete Attender
+DELETE {{base_url}}/api/attenders/1
+
+###
+
+## ==================== ERROR TESTING ====================
+
+### Missing Required Field - Student
+POST {{base_url}}/api/students
+Content-Type: application/json
+
+{
+  "branch": "Computer Science",
+  "full_name": "Incomplete Student"
+}
+
+### Invalid Role - Attender (should fail)
+POST {{base_url}}/api/attenders
+Content-Type: application/json
+
+{
+  "firstName": "Test",
+  "lastName": "User",
+  "gender": "Male",
+  "phone": "9876543210",
+  "email": "test@example.com",
+  "role": "Manager",
+  "salary": 15000,
+  "status": "active"
+}
+
+### Invalid Status - Attender (should fail)
+POST {{base_url}}/api/attenders
+Content-Type: application/json
+
+{
+  "firstName": "Test",
+  "lastName": "User",
+  "gender": "Male",
+  "phone": "9876543210",
+  "email": "test@example.com",
+  "role": "Attender",
+  "salary": 15000,
+  "status": "pending"
+}
+
+### Get Non-Existent Student (should return 404)
+GET {{base_url}}/api/students/99999
+
+### Get Non-Existent Employee (should return 404)
+GET {{base_url}}/api/employee/99999
+
+### Get Non-Existent Attender (should return 404)
+GET {{base_url}}/api/attenders/99999
