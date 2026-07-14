@@ -3,7 +3,7 @@ const pool = require("../config/db");
 // ─────────────────────────────────────────────
 // Get all invalid fee totals (with filters)
 // ─────────────────────────────────────────────
-const getAllInvalidFeeTotals = async ({ student_id, current_class, page = 1, limit = 20 }) => {
+const getAllInvalidFeeTotals = async ({ student_id, status, page = 1, limit = 20 }) => {
   const conditions = [];
   const values = [];
   let idx = 1;
@@ -12,9 +12,9 @@ const getAllInvalidFeeTotals = async ({ student_id, current_class, page = 1, lim
     conditions.push(`student_id = $${idx++}`);
     values.push(student_id);
   }
-  if (current_class) {
-    conditions.push(`current_class ILIKE $${idx++}`);
-    values.push(`%${current_class}%`);
+  if (status) {
+    conditions.push(`status = $${idx++}`);
+    values.push(status.toUpperCase());
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
@@ -23,13 +23,20 @@ const getAllInvalidFeeTotals = async ({ student_id, current_class, page = 1, lim
   const dataQuery = `
     SELECT * FROM invalid_fee_totals
     ${where}
-    ORDER BY total_invalid_amount DESC
+    ORDER BY diff DESC
     LIMIT $${idx++} OFFSET $${idx++}
   `;
   values.push(limit, offset);
 
   const countQuery = `SELECT COUNT(*) FROM invalid_fee_totals ${where}`;
-  const sumQuery   = `SELECT SUM(total_invalid_amount) AS grand_total FROM invalid_fee_totals ${where}`;
+  const sumQuery = `
+      SELECT
+          COALESCE(SUM(reported),0) AS total_reported,
+          COALESCE(SUM(calculated),0) AS total_calculated,
+          COALESCE(SUM(diff),0) AS total_difference
+      FROM invalid_fee_totals
+      ${where}
+    `;
 
   const [dataResult, countResult, sumResult] = await Promise.all([
     pool.query(dataQuery, values),
@@ -37,12 +44,14 @@ const getAllInvalidFeeTotals = async ({ student_id, current_class, page = 1, lim
     pool.query(sumQuery,   values.slice(0, idx - 3)),
   ]);
 
-  return {
-    total_students : parseInt(countResult.rows[0].count),
-    grand_total    : parseFloat(sumResult.rows[0].grand_total || 0),
-    page           : parseInt(page),
-    limit          : parseInt(limit),
-    data           : dataResult.rows,
+    return {
+    total_students: Number(countResult.rows[0].count),
+    total_reported: Number(sumResult.rows[0].total_reported),
+    total_calculated: Number(sumResult.rows[0].total_calculated),
+    total_difference: Number(sumResult.rows[0].total_difference),
+    page: Number(page),
+    limit: Number(limit),
+    data: dataResult.rows,
   };
 };
 

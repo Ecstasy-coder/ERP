@@ -67,20 +67,39 @@ const getInvalidFeeById = async (id) => {
 // ─────────────────────────────────────────────
 const createInvalidFeeData = async (data) => {
   const {
-    student_id, student_name, current_class, section,
-    roll_number, amount, payment_mode, transaction_ref,
-    error_reason, payment_date, status = "INVALID",
+     reference_id,
+    student_id,
+    student_name,
+    school_name,
+    current_class,
+    issue,
+    details,
+    payment_date,
+    status = "UNRESOLVED",
   } = data;
 
   const result = await pool.query(
     `INSERT INTO invalid_fee_data
-      (student_id, student_name, current_class, section, roll_number,
-       amount, payment_mode, transaction_ref, error_reason, payment_date, status)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+      ( reference_id,
+      student_id,
+      student_name,
+      school_name,
+      current_class,
+      issue,
+      details,
+      status,
+      payment_date)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
      RETURNING *`,
-    [student_id, student_name, current_class, section, roll_number,
-     amount, payment_mode, transaction_ref, error_reason,
-     payment_date || new Date(), status]
+    [ reference_id,
+      student_id,
+      student_name,
+      school_name,
+      current_class,
+      issue,
+      details,
+      status.toUpperCase(),
+      payment_date || new Date(),]
   );
 
   const record = result.rows[0];
@@ -108,23 +127,45 @@ const updateInvalidFeeStatus = async (id, status) => {
   return result.rows[0] || null;
 };
 
+
+
 // ─────────────────────────────────────────────
 // INTERNAL: upsert totals
 // ─────────────────────────────────────────────
 const upsertInvalidFeeTotal = async (record) => {
+
+    const reported = Number(record.reported || 0);
+  const calculated = Number(record.calculated || 0);
+  const diff = reported - calculated;
+
   await pool.query(
     `INSERT INTO invalid_fee_totals
-      (student_id, student_name, current_class, section,
-       total_invalid_amount, total_transactions, last_transaction_date)
-     VALUES ($1, $2, $3, $4, $5, 1, $6)
+      (student_id,
+      student_name,
+      school_name,
+      reported,
+      calculated,
+      diff,
+      reason,
+      status)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
      ON CONFLICT (student_id) DO UPDATE SET
-       total_invalid_amount  = invalid_fee_totals.total_invalid_amount + EXCLUDED.total_invalid_amount,
-       total_transactions    = invalid_fee_totals.total_transactions + 1,
-       last_transaction_date = EXCLUDED.last_transaction_date,
-       updated_at            = NOW()`,
+       student_name = EXCLUDED.student_name,
+      school_name = EXCLUDED.school_name,
+      reported = EXCLUDED.reported,
+      calculated = EXCLUDED.calculated,
+      diff = EXCLUDED.diff,
+      reason = EXCLUDED.reason,
+      status = EXCLUDED.status`,
     [
-      record.student_id, record.student_name, record.current_class,
-      record.section, record.amount, record.payment_date,
+       record.student_id,
+      record.student_name,
+      record.school_name,
+      reported,
+      calculated,
+      diff,
+      record.reason,
+      record.status || "MISMATCH",
     ]
   );
 };
@@ -135,17 +176,35 @@ const upsertInvalidFeeTotal = async (record) => {
 const logTransaction = async (log_type, record) => {
   await pool.query(
     `INSERT INTO transaction_logs
-      (log_type, student_id, student_name, current_class, section,
-       amount, transaction_ref, error_reason, status, raw_payload)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      ( student_id,
+      log_type,
+      transaction_ref,
+      student_name,
+      school_name,
+      amount,
+      payment_date,
+      payment_time,
+      payment_method,
+      operator_name,
+      status,
+      raw_payload)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
     [
-      log_type, record.student_id, record.student_name,
-      record.current_class, record.section, record.amount,
-      record.transaction_ref, record.error_reason, record.status,
+      record.student_id,
+      log_type,
+      record.transaction_ref || `TXN-${Date.now()}`,
+      record.student_name,
+      record.school_name,
+      record.amount || 0,
+      record.payment_date,
+      record.payment_time || null,
+      record.payment_method || null,
+      record.operator_name || null,
+      record.status,
       JSON.stringify(record),
     ]
   );
-};
+};  
 
 module.exports = {
   getAllInvalidFeeData,

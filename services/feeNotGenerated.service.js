@@ -68,20 +68,15 @@ const getFeeNotGeneratedById = async (id) => {
 // ─────────────────────────────────────────────
 const createFeeNotGenerated = async (data) => {
   const {
-    student_id, student_name, current_class, section,
-    roll_number, amount_paid, transaction_ref,
-    payment_date, error_reason, status = "PENDING",
+   student_id, student_name, school_name, current_class, section, roll_number, amount_paid, transaction_ref, payment_date, error_reason, status = "PENDING",
   } = data;
 
   const result = await pool.query(
     `INSERT INTO fee_not_generated
-      (student_id, student_name, current_class, section, roll_number,
-       amount_paid, transaction_ref, payment_date, error_reason, status)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      (student_id, student_name, school_name, current_class, section, roll_number, amount_paid, transaction_ref, payment_date, error_reason, status)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
      RETURNING *`,
-    [student_id, student_name, current_class, section, roll_number,
-     amount_paid, transaction_ref, payment_date || new Date(),
-     error_reason, status]
+   [ student_id, student_name, school_name, current_class, section, roll_number, amount_paid, transaction_ref, payment_date || new Date(), error_reason, status.toUpperCase(), ]
   );
 
   const record = result.rows[0];

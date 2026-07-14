@@ -1,4 +1,4 @@
-const pool   = require("../config/db");
+/*const pool   = require("../config/db");
 const ExcelJS = require("exceljs");
 
 // ─────────────────────────────────────────────
@@ -186,4 +186,116 @@ module.exports = {
   getTransactionLogs,
   exportTransactionLogsToExcel,
 };
+*/
 
+const pool = require("../config/db");
+
+// ======================================================
+// Get Transaction Logs
+// ======================================================
+const getTransactionLogs = async ({
+  log_type,
+  student_id,
+  status,
+  from_date,
+  to_date,
+  page = 1,
+  limit = 20,
+}) => {
+  const conditions = [];
+  const values = [];
+  let idx = 1;
+
+  if (log_type) {
+    conditions.push(`log_type = $${idx++}`);
+    values.push(log_type.toUpperCase());
+  }
+
+  if (student_id) {
+    conditions.push(`student_id = $${idx++}`);
+    values.push(student_id);
+  }
+
+  if (status) {
+    conditions.push(`status = $${idx++}`);
+    values.push(status.toUpperCase());
+  }
+
+  if (from_date) {
+    conditions.push(`payment_date >= $${idx++}`);
+    values.push(from_date);
+  }
+
+  if (to_date) {
+    conditions.push(`payment_date <= $${idx++}`);
+    values.push(to_date);
+  }
+
+  const where = conditions.length
+    ? `WHERE ${conditions.join(" AND ")}`
+    : "";
+
+  const offset = (page - 1) * limit;
+
+  const dataQuery = `
+    SELECT
+      id,
+      student_id,
+      log_type,
+      transaction_ref,
+      student_name,
+      school_name,
+      amount,
+      payment_date,
+      payment_time,
+      payment_method,
+      operator_name,
+      status,
+      raw_payload,
+      logged_at
+    FROM transaction_logs
+    ${where}
+    ORDER BY logged_at DESC
+    LIMIT $${idx++}
+    OFFSET $${idx++}
+  `;
+
+  values.push(limit, offset);
+
+  const countQuery = `
+    SELECT COUNT(*)
+    FROM transaction_logs
+    ${where}
+  `;
+
+  const [dataResult, countResult] = await Promise.all([
+    pool.query(dataQuery, values),
+    pool.query(countQuery, values.slice(0, idx - 3)),
+  ]);
+
+  return {
+    total: Number(countResult.rows[0].count),
+    page: Number(page),
+    limit: Number(limit),
+    data: dataResult.rows,
+  };
+};
+
+// ======================================================
+// Get Transaction Log By ID
+// ======================================================
+const getTransactionLogById = async (id) => {
+  const result = await pool.query(
+    `SELECT *
+     FROM transaction_logs
+     WHERE id = $1`,
+    [id]
+  );
+
+  return result.rows[0] || null;
+};
+
+module.exports = {
+  getTransactionLogs,
+  getTransactionLogById,
+};

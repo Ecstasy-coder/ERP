@@ -22,9 +22,20 @@ const getById = async (req, res) => {
 const create = async (req, res) => {
   try {
     const record = await service.createInvalidFeeData(req.body);
-    res.status(201).json({ success: true, data: record });
+
+    return res.status(201).json({
+      success: true,
+      data: record,
+    });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("❌ Error object:", err);
+    console.error("❌ Error message:", err.message);
+    console.error("❌ Error stack:", err.stack);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
+    });
   }
 };
 
