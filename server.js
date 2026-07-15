@@ -5,6 +5,9 @@ const pool = require("./config/db");
 const fs = require("fs");
 const path = require("path");
 
+const gradeSystemRoutes = require("./routes/gradeSystemRoutes");
+const gradeReportRoutes = require("./routes/gradeReportRoutes");
+
 const app = express();
 
 app.use(cors());
@@ -18,6 +21,8 @@ app.use((req, res, next) => {
 // Routes
 app.use("/api/exams", examRoutes);
 
+app.use("/api/grade-system", gradeSystemRoutes);
+app.use("/api/grade-report", gradeReportRoutes);
 // Ensure uploads directory exists and serve it
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
