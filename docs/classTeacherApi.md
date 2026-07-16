@@ -2,12 +2,12 @@
 
 ## Base URL
 
-`http://localhost:5000/api/class-teachers`
+`http://localhost:5000/api/classes/teachers`
 
 ## Endpoints
 
-### GET /api/class-teachers
-Fetch all active assignments with optional filters.
+### GET /api/classes/teachers
+Fetch all active teacher assignments with optional filters.
 
 Query params:
 - search
@@ -19,10 +19,10 @@ Query params:
 - page
 - limit
 
-### GET /api/class-teachers/:id
+### GET /api/classes/teachers/:id
 Fetch a single assignment by ID.
 
-### POST /api/class-teachers
+### POST /api/classes/teachers
 Create a teacher assignment.
 
 Body example:
@@ -39,8 +39,32 @@ Body example:
 }
 ```
 
-### PUT /api/class-teachers/:id
+### PUT /api/classes/teachers/:id
 Update an existing assignment.
 
-### DELETE /api/class-teachers/:id
+### DELETE /api/classes/teachers/:id
 Soft delete an assignment.
+
+---
+
+# Class Details API
+
+## Base URL
+
+`http://localhost:5000/api/classes/details`
+
+### GET /api/classes/details
+Fetch class details, selected class teacher data, and student list for a specific branch/class/section.
+
+Query params:
+- branch_id (required)
+- class_id (required)
+- section_id (required)
+
+Response includes:
+- branch
+- class
+- section
+- class_teacher
+- subjects
+- students

@@ -1,6 +1,32 @@
 const pool = require("../config/db");
 
+const resolveTeacherId = async (data = {}) => {
+  if (data.teacher_id !== undefined && data.teacher_id !== null && data.teacher_id !== "") {
+    const numericId = Number(data.teacher_id);
+    if (Number.isInteger(numericId) && numericId > 0) {
+      const existing = await pool.query(`SELECT id FROM teachers WHERE id = $1 AND is_active = true;`, [numericId]);
+      if (existing.rows[0]) {
+        return numericId;
+      }
+    }
+  }
+
+  const teacherCode = data.employee_code || data.employeeCode || data.teacher_code || data.teacherCode || data.teacher_employee_code || data.teacherEmployeeCode;
+  if (teacherCode !== undefined && teacherCode !== null && teacherCode !== "") {
+    const normalizedCode = String(teacherCode).trim();
+    const existing = await pool.query(`SELECT id FROM teachers WHERE employee_code = $1 AND is_active = true;`, [normalizedCode]);
+    if (existing.rows[0]) {
+      return existing.rows[0].id;
+    }
+  }
+
+  return null;
+};
+
 const createTimetable = async (data) => {
+  const teacherId = await resolveTeacherId(data);
+  const sectionId = data.section_id || null;
+
   const query = `
     INSERT INTO class_timetable_entries (
       branch_id,
@@ -23,13 +49,13 @@ const createTimetable = async (data) => {
     data.branch_id,
     data.academic_year_id,
     data.class_id,
-    data.section_id,
+    sectionId,
     data.day_name,
     data.period_no,
     data.start_time,
     data.end_time,
     data.subject_id,
-    data.teacher_id || null,
+    teacherId || null,
     true,
   ];
 
@@ -41,7 +67,7 @@ const getWeeklyTimetable = async ({ branch_id, class_id, section_id } = {}) => {
   const result = await pool.query(
     `SELECT cte.*, s.subject_name, t.teacher_name
      FROM class_timetable_entries cte
-     LEFT JOIN subjects s ON s.id = cte.subject_id
+     LEFT JOIN subjects s ON s.id = cte.subject_id  
      LEFT JOIN teachers t ON t.id = cte.teacher_id
      WHERE cte.is_active = true
        AND cte.branch_id = $1
@@ -92,4 +118,5 @@ module.exports = {
   updateTimetable,
   deleteTimetable,
   findOverlap,
+  resolveTeacherId,
 };

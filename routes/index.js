@@ -14,6 +14,7 @@ const attendanceRoutes = require("./attendanceRoutes");
 const diaryRoutes = require("./diaryRoutes");
 const assignmentRoutes = require("./assignmentRoutes");
 const timetableRoutes = require("./timetableRoutes");
+const lookupRoutes = require("./lookupRoutes");
 
 router.get("/", (req, res) => {
   res.status(200).json({
@@ -33,6 +34,7 @@ router.use("/attendance", attendanceRoutes);
 router.use("/diaries", diaryRoutes);
 router.use("/assignments", assignmentRoutes);
 router.use("/timetable", timetableRoutes);
+router.use("/lookups", lookupRoutes);
 router.use("/classes", classRoutes);
 
 module.exports = router;

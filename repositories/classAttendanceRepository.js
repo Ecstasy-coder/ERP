@@ -1,29 +1,54 @@
 const pool = require("../config/db");
 
 const getStudentsForAttendance = async ({ branch_id, class_id, section_id }) => {
-  const classResult = await pool.query(`SELECT class_name FROM study_classes WHERE id = $1 AND is_active = true;`, [class_id]);
-  const sectionResult = await pool.query(`SELECT section_name FROM sections WHERE id = $1 AND is_active = true;`, [section_id]);
-  const branchResult = await pool.query(`SELECT branch_name FROM branches WHERE id = $1 AND status = true;`, [branch_id]);
+  let query = `
+    SELECT id, full_name AS student_name, admission_no, current_class, current_section, is_active AS status
+    FROM students
+    WHERE is_active = true
+  `;
+  const values = [];
 
-  const className = classResult.rows[0]?.class_name || null;
-  const sectionName = sectionResult.rows[0]?.section_name || null;
-  const branchName = branchResult.rows[0]?.branch_name || null;
+  if (branch_id) {
+    const branchValue = String(branch_id);
+    values.push(branchValue);
+    query += ` AND ($${values.length}::text IS NULL OR branch ILIKE '%' || $${values.length} || '%' OR branch = $${values.length})`;
+  }
 
-  const result = await pool.query(
-    `SELECT id, full_name AS student_name, admission_no, current_class, current_section, is_active AS status
-     FROM students
-     WHERE ($1::text IS NULL OR branch = $1)
-       AND ($2::text IS NULL OR current_class = $2)
-       AND ($3::text IS NULL OR current_section = $3)
-       AND is_active = true
-     ORDER BY full_name ASC;`,
-    [branchName, className, sectionName]
-  );
+  if (class_id) {
+    const classValue = String(class_id);
+    values.push(classValue);
+    query += ` AND ($${values.length}::text IS NULL OR current_class = $${values.length})`;
+  }
 
+  if (section_id) {
+    const sectionValue = String(section_id);
+    values.push(sectionValue);
+    query += ` AND ($${values.length}::text IS NULL OR current_section = $${values.length})`;
+  }
+
+  query += ` ORDER BY full_name ASC;`;
+
+  const result = await pool.query(query, values);
   return result.rows;
 };
 
 const markAttendance = async (data) => {
+  let sectionId = data.section_id || null;
+
+  if (!sectionId) {
+    const fallbackSection = await pool.query(`SELECT id FROM sections ORDER BY id LIMIT 1;`);
+    sectionId = fallbackSection.rows[0]?.id || null;
+  }
+
+  if (!sectionId) {
+    const createdSection = await pool.query(`
+      INSERT INTO sections (section_name, is_active)
+      VALUES ('Default', true)
+      RETURNING id;
+    `);
+    sectionId = createdSection.rows[0].id;
+  }
+
   const query = `
     INSERT INTO class_attendance_records (
       branch_id,
@@ -44,7 +69,7 @@ const markAttendance = async (data) => {
     data.branch_id,
     data.academic_year_id,
     data.class_id,
-    data.section_id,
+    sectionId,
     data.student_id,
     data.attendance_date,
     data.attendance_status,

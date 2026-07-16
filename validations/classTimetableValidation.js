@@ -1,10 +1,10 @@
 const { body, query, param } = require("express-validator");
 
 const classTimetableValidation = [
-  body("branch_id").isInt({ min: 1 }).withMessage("Branch is required"),
-  body("academic_year_id").isInt({ min: 1 }).withMessage("Academic year is required"),
+  body("branch_id").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Branch must be a positive integer"),
+  body("academic_year_id").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Academic year must be a positive integer"),
   body("class_id").isInt({ min: 1 }).withMessage("Class is required"),
-  body("section_id").isInt({ min: 1 }).withMessage("Section is required"),
+  body("section_id").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Section must be a positive integer"),
   body("day_name").notEmpty().withMessage("Day is required"),
   body("period_no").isInt({ min: 1 }).withMessage("Period number is required"),
   body("start_time").notEmpty().withMessage("Start time is required"),

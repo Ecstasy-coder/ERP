@@ -3,7 +3,14 @@ const messages = require("../constants/messages");
 const { getPaginationParams } = require("../helpers/pagination");
 
 const createAssignment = async (data, user = null) => {
-  const duplicate = await classTeacherRepository.findExistingAssignment(data);
+  const teacherId = await classTeacherRepository.resolveTeacherId(data);
+  if (!teacherId) {
+    const error = new Error("Teacher is required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const duplicate = await classTeacherRepository.findExistingAssignment({ ...data, teacher_id: teacherId });
   if (duplicate) {
     const error = new Error(messages.DUPLICATE_ASSIGNMENT);
     error.statusCode = 409;
@@ -12,6 +19,7 @@ const createAssignment = async (data, user = null) => {
 
   return await classTeacherRepository.createAssignment({
     ...data,
+    teacher_id: teacherId,
     created_by: user?.id || null,
     updated_by: user?.id || null,
   });
@@ -59,13 +67,18 @@ const updateAssignment = async (id, data, user = null) => {
     throw error;
   }
 
-  if (data.teacher_id || data.subject_id || data.class_id || data.section_id || data.branch_id || data.academic_year_id) {
+  if (data.teacher_id || data.employee_code || data.employeeCode || data.teacher_code || data.teacherCode || data.teacher_employee_code || data.teacherEmployeeCode || data.subject_id || data.class_id || data.section_id || data.branch_id || data.academic_year_id) {
+    const resolvedTeacherId = await classTeacherRepository.resolveTeacherId({
+      ...data,
+      teacher_id: data.teacher_id !== undefined ? data.teacher_id : existing.teacher_id,
+    });
+
     const duplicate = await classTeacherRepository.findExistingAssignment({
       branch_id: data.branch_id !== undefined ? data.branch_id : existing.branch_id,
       academic_year_id: data.academic_year_id !== undefined ? data.academic_year_id : existing.academic_year_id,
       class_id: data.class_id !== undefined ? data.class_id : existing.class_id,
       section_id: data.section_id !== undefined ? data.section_id : existing.section_id,
-      teacher_id: data.teacher_id !== undefined ? data.teacher_id : existing.teacher_id,
+      teacher_id: resolvedTeacherId !== null ? resolvedTeacherId : (data.teacher_id !== undefined ? data.teacher_id : existing.teacher_id),
       subject_id: data.subject_id !== undefined ? data.subject_id : existing.subject_id,
     });
 

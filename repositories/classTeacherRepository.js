@@ -1,13 +1,38 @@
 const pool = require("../config/db");
 const queries = require("../queries/classTeacherQueries");
 
+const resolveTeacherId = async (data = {}) => {
+  if (data.teacher_id !== undefined && data.teacher_id !== null && data.teacher_id !== "") {
+    const numericId = Number(data.teacher_id);
+    if (Number.isInteger(numericId) && numericId > 0) {
+      const existing = await pool.query(`SELECT id FROM teachers WHERE id = $1 AND is_active = true;`, [numericId]);
+      if (existing.rows[0]) {
+        return numericId;
+      }
+    }
+  }
+
+  const teacherCode = data.employee_code || data.employeeCode || data.teacher_code || data.teacherCode || data.teacher_employee_code || data.teacherEmployeeCode;
+  if (teacherCode !== undefined && teacherCode !== null && teacherCode !== "") {
+    const normalizedCode = String(teacherCode).trim();
+    const existing = await pool.query(`SELECT id FROM teachers WHERE employee_code = $1 AND is_active = true;`, [normalizedCode]);
+    if (existing.rows[0]) {
+      return existing.rows[0].id;
+    }
+  }
+
+  return null;
+};
+
 const createAssignment = async (data) => {
+  const teacherId = await resolveTeacherId(data);
+
   const values = [
     data.branch_id,
     data.academic_year_id,
     data.class_id,
     data.section_id,
-    data.teacher_id,
+    teacherId,
     data.subject_id,
     data.is_class_teacher !== undefined ? data.is_class_teacher : false,
     data.remarks || null,
@@ -78,12 +103,14 @@ const getAssignmentById = async (id) => {
 };
 
 const updateAssignment = async (id, data, updatedBy = null) => {
+  const teacherId = await resolveTeacherId(data);
+
   const values = [
     data.branch_id !== undefined ? data.branch_id : null,
     data.academic_year_id !== undefined ? data.academic_year_id : null,
     data.class_id !== undefined ? data.class_id : null,
     data.section_id !== undefined ? data.section_id : null,
-    data.teacher_id !== undefined ? data.teacher_id : null,
+    data.teacher_id !== undefined || data.employee_code !== undefined || data.employeeCode !== undefined || data.teacher_code !== undefined || data.teacherCode !== undefined || data.teacher_employee_code !== undefined || data.teacherEmployeeCode !== undefined ? teacherId : null,
     data.subject_id !== undefined ? data.subject_id : null,
     data.is_class_teacher !== undefined ? data.is_class_teacher : null,
     data.remarks !== undefined ? data.remarks : null,
@@ -119,4 +146,5 @@ module.exports = {
   updateAssignment,
   softDeleteAssignment,
   findExistingAssignment,
+  resolveTeacherId,
 };

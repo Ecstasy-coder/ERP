@@ -1,6 +1,22 @@
 const pool = require("../config/db");
 
 const createAssignment = async (data) => {
+  let sectionId = data.section_id || null;
+
+  if (!sectionId) {
+    const fallbackSection = await pool.query(`SELECT id FROM sections ORDER BY id LIMIT 1;`);
+    sectionId = fallbackSection.rows[0]?.id || null;
+  }
+
+  if (!sectionId) {
+    const createdSection = await pool.query(`
+      INSERT INTO sections (section_name, is_active)
+      VALUES ('Default', true)
+      RETURNING id;
+    `);
+    sectionId = createdSection.rows[0].id;
+  }
+
   const query = `
     INSERT INTO class_assignments (
       branch_id,
@@ -22,7 +38,7 @@ const createAssignment = async (data) => {
     data.branch_id,
     data.academic_year_id,
     data.class_id,
-    data.section_id,
+    sectionId,
     data.title,
     data.description || null,
     data.assignment_date,
@@ -36,28 +52,33 @@ const createAssignment = async (data) => {
 };
 
 const getAssignments = async ({ branch_id, class_id, section_id, page = 1, limit = 10, offset = 0 } = {}) => {
-  const countQuery = `
+  const values = [branch_id, class_id];
+  let countQuery = `
     SELECT COUNT(*)::int AS total
     FROM class_assignments
     WHERE is_active = true
       AND branch_id = $1
       AND class_id = $2
-      AND section_id = $3
   `;
-  const countResult = await pool.query(countQuery, [branch_id, class_id, section_id]);
-
-  const query = `
+  let query = `
     SELECT *
     FROM class_assignments
     WHERE is_active = true
       AND branch_id = $1
       AND class_id = $2
-      AND section_id = $3
-    ORDER BY due_date ASC, id DESC
-    LIMIT $4 OFFSET $5;
   `;
 
-  const result = await pool.query(query, [branch_id, class_id, section_id, limit, offset]);
+  if (section_id) {
+    countQuery += ` AND section_id = $3 `;
+    query += ` AND section_id = $3 `;
+    values.push(section_id);
+  }
+
+  countQuery += `;`;
+  query += ` ORDER BY due_date ASC, id DESC LIMIT $${values.length + 1} OFFSET $${values.length + 2};`;
+
+  const countResult = await pool.query(countQuery, values);
+  const result = await pool.query(query, [...values, limit, offset]);
   return { items: result.rows, total: countResult.rows[0].total, page, limit };
 };
 

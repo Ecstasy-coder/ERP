@@ -1,6 +1,22 @@
 const pool = require("../config/db");
 
 const createDiary = async (data) => {
+  let sectionId = data.section_id || null;
+
+  if (!sectionId) {
+    const fallbackSection = await pool.query(`SELECT id FROM sections ORDER BY id LIMIT 1;`);
+    sectionId = fallbackSection.rows[0]?.id || null;
+  }
+
+  if (!sectionId) {
+    const createdSection = await pool.query(`
+      INSERT INTO sections (section_name, is_active)
+      VALUES ('Default', true)
+      RETURNING id;
+    `);
+    sectionId = createdSection.rows[0].id;
+  }
+
   const query = `
     INSERT INTO class_diary_entries (
       branch_id,
@@ -21,7 +37,7 @@ const createDiary = async (data) => {
     data.branch_id,
     data.academic_year_id,
     data.class_id,
-    data.section_id,
+    sectionId,
     data.diary_date,
     data.subject_id,
     data.message,
@@ -45,7 +61,7 @@ const getDiaries = async ({ branch_id, class_id, section_id, page = 1, limit = 1
   const countResult = await pool.query(countQuery, [branch_id, class_id, section_id]);
 
   const query = `
-    SELECT cde.*, s.subject_name
+    SELECT cde.*, s.subject_title AS subject_name
     FROM class_diary_entries cde
     LEFT JOIN subjects s ON s.id = cde.subject_id
     WHERE cde.is_active = true
