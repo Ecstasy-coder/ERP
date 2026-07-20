@@ -8,7 +8,12 @@ exports.getAll = async(req, res) => {
 
         const data = await model.getFeeTypes();
 
-        res.json(data);
+        const formattedData = data.map((item) => ({
+            id: item.id,
+            fee_type: item.fee_type
+        }));
+
+        res.json(formattedData);
 
     } catch (err) {
 
@@ -26,7 +31,14 @@ exports.getOne = async(req, res) => {
 
         const data = await model.getFeeType(req.params.id);
 
-        res.json(data);
+        if (!data) {
+            return res.status(404).json({ message: "Fee type not found" });
+        }
+
+        res.json({
+            id: data.id,
+            fee_type: data.fee_type
+        });
 
     } catch (err) {
 

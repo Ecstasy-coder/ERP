@@ -18,9 +18,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
-
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 app.use("/api/students", studentRoutes);
 app.use("/api/promotions", promotionRoutes);
 app.use("/api/siblings", siblingRoutes);
@@ -31,6 +29,8 @@ app.use("/api/fees", feeRoutes);
 app.use('/api', termRoutes);
 app.use('/api/term-fees', termFeeRoutes);
 app.use('/api/student-fees', require('./routes/studentfeeRoutes'));
+app.use("/api/other-fees", require("./routes/otherFeeRoutes"));
+app.use("/api/other-fee", require("./routes/otherFeeRoutes"));
 app.get("/", (req, res) => {
     res.json({
         success: true,
@@ -92,10 +92,50 @@ async function startServer() {
                     //     console.log(`ℹ️ Table '${match[2]}' already exists.`);
                     // }
 
+                } else if (err.code === '42703') {
+                    console.error('⚠️ Schema mismatch detected during initialization:', err.message);
                 } else {
                     console.error(err);
                 }
             }
+        }
+
+        try {
+            await pool.query(`
+                ALTER TABLE other_fee_details
+                ADD COLUMN IF NOT EXISTS fee_type_id INTEGER;
+            `);
+
+            await pool.query(`
+                ALTER TABLE other_fee_details
+                ADD COLUMN IF NOT EXISTS fee_type VARCHAR(150);
+            `);
+
+            await pool.query(`
+                ALTER TABLE other_fee_details
+                ALTER COLUMN fee_type DROP NOT NULL;
+            `);
+
+            await pool.query(`
+                ALTER TABLE other_fee_details
+                DROP CONSTRAINT IF EXISTS fk_other_fee_student;
+            `);
+            await pool.query(`
+                ALTER TABLE other_fee_details
+                DROP CONSTRAINT IF EXISTS fk_other_fee_branch;
+            `);
+            await pool.query(`
+                ALTER TABLE other_fee_details
+                DROP CONSTRAINT IF EXISTS fk_other_fee_class;
+            `);
+            await pool.query(`
+                ALTER TABLE other_fee_details
+                DROP CONSTRAINT IF EXISTS fk_other_fee_year;
+            `);
+
+            console.log("✅ Applied other fee compatibility migrations.");
+        } catch (migrationErr) {
+            console.error("⚠️ Failed to apply other fee migrations:", migrationErr.message);
         }
 
         if (createdCount > 0) {
