@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS payment_types (
 );
 
 -- ==========================================
--- STUDENT FEE DETAILS TABLE
+-- STUDENT FEE DETAILS TABLE transport fee
 -- ==========================================
 
 CREATE TABLE IF NOT EXISTS student_fee_details (
@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS student_fee_details (
 );
 
 
-
+-- transport fee terms
 CREATE TABLE IF NOT EXISTS student_fee_terms (
 
     id SERIAL PRIMARY KEY,
@@ -223,7 +223,7 @@ CREATE TABLE IF NOT EXISTS study_classes (
 
 );
 
--- term fee details table
+-- term fee details table main
 CREATE TABLE IF NOT EXISTS term_fee_details (
 
     term_fee_id SERIAL PRIMARY KEY,
