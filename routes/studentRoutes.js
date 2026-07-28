@@ -24,6 +24,8 @@ router.post(
 
 router.get("/", studentController.getStudents);
 
+router.get("/registration-options", studentController.getRegistrationOptions);
+
 router.get("/:id", studentController.getStudentById);
 
 router.put(
