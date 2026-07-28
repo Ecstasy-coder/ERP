@@ -138,6 +138,87 @@ async function startServer() {
             console.error("⚠️ Failed to apply other fee migrations:", migrationErr.message);
         }
 
+        try {
+            await pool.query(`
+                ALTER TABLE students
+                ADD COLUMN IF NOT EXISTS branch_id INTEGER;
+            `);
+
+            await pool.query(`
+                ALTER TABLE students
+                ADD COLUMN IF NOT EXISTS current_academic_year_id INTEGER;
+            `);
+
+            await pool.query(`
+                ALTER TABLE students
+                ADD COLUMN IF NOT EXISTS current_class_id INTEGER;
+            `);
+
+            await pool.query(`
+                ALTER TABLE students
+                ADD COLUMN IF NOT EXISTS admission_academic_year_id INTEGER;
+            `);
+
+            await pool.query(`
+                ALTER TABLE students
+                ADD COLUMN IF NOT EXISTS admission_class_id INTEGER;
+            `);
+
+            await pool.query(`
+                ALTER TABLE students
+                DROP CONSTRAINT IF EXISTS fk_students_branch;
+            `);
+            await pool.query(`
+                ALTER TABLE students
+                ADD CONSTRAINT fk_students_branch
+                FOREIGN KEY (branch_id) REFERENCES branches(branch_id) ON DELETE SET NULL;
+            `);
+
+            await pool.query(`
+                ALTER TABLE students
+                DROP CONSTRAINT IF EXISTS fk_students_current_academic_year;
+            `);
+            await pool.query(`
+                ALTER TABLE students
+                ADD CONSTRAINT fk_students_current_academic_year
+                FOREIGN KEY (current_academic_year_id) REFERENCES academic_years(academic_year_id) ON DELETE SET NULL;
+            `);
+
+            await pool.query(`
+                ALTER TABLE students
+                DROP CONSTRAINT IF EXISTS fk_students_current_class;
+            `);
+            await pool.query(`
+                ALTER TABLE students
+                ADD CONSTRAINT fk_students_current_class
+                FOREIGN KEY (current_class_id) REFERENCES study_classes(id) ON DELETE SET NULL;
+            `);
+
+            await pool.query(`
+                ALTER TABLE students
+                DROP CONSTRAINT IF EXISTS fk_students_admission_academic_year;
+            `);
+            await pool.query(`
+                ALTER TABLE students
+                ADD CONSTRAINT fk_students_admission_academic_year
+                FOREIGN KEY (admission_academic_year_id) REFERENCES academic_years(academic_year_id) ON DELETE SET NULL;
+            `);
+
+            await pool.query(`
+                ALTER TABLE students
+                DROP CONSTRAINT IF EXISTS fk_students_admission_class;
+            `);
+            await pool.query(`
+                ALTER TABLE students
+                ADD CONSTRAINT fk_students_admission_class
+                FOREIGN KEY (admission_class_id) REFERENCES study_classes(id) ON DELETE SET NULL;
+            `);
+
+            console.log("✅ Applied student lookup foreign key migrations.");
+        } catch (migrationErr) {
+            console.error("⚠️ Failed to apply student lookup migrations:", migrationErr.message);
+        }
+
         if (createdCount > 0) {
             console.log(`🎉 Database initialization completed.`);
         } else {
