@@ -28,12 +28,80 @@ const normalizeBoolean = (value, defaultValue = true) => {
     return defaultValue;
 };
 
+const getLookupValue = async(query, values = []) => {
+    const result = await pool.query(query, values);
+    return result.rows[0];
+};
+
+const resolveLookupValue = async({ value, id, table, idColumn, valueColumn }) => {
+    if (value !== undefined && value !== null && value !== "") {
+        return value;
+    }
+
+    if (id === undefined || id === null || id === "") {
+        return undefined;
+    }
+
+    const lookup = await getLookupValue(
+        `SELECT ${valueColumn} FROM ${table} WHERE ${idColumn} = $1 LIMIT 1`, [id]
+    );
+
+    return lookup ? lookup[valueColumn] : undefined;
+};
+
+const resolveLookupId = async({ value, id, table, idColumn, valueColumn }) => {
+    if (id !== undefined && id !== null && id !== "") {
+        return Number(id);
+    }
+
+    if (value !== undefined && value !== null && value !== "") {
+        const lookup = await getLookupValue(
+            `SELECT ${idColumn} FROM ${table} WHERE LOWER(${valueColumn}) = LOWER($1) LIMIT 1`, [value]
+        );
+
+        return lookup ? Number(lookup[idColumn]) : undefined;
+    }
+
+    return undefined;
+};
+
+exports.getRegistrationOptions = async(req, res) => {
+    try {
+        const [branchesResult, academicYearsResult, classesResult] = await Promise.all([
+            pool.query(
+                "SELECT branch_id, branch_name, is_active FROM branches WHERE is_active IS NOT FALSE ORDER BY branch_name"
+            ),
+            pool.query(
+                "SELECT academic_year_id, academic_year, is_active FROM academic_years WHERE is_active IS NOT FALSE ORDER BY academic_year"
+            ),
+            pool.query(
+                "SELECT id, class_name, is_active FROM study_classes WHERE is_active IS NOT FALSE ORDER BY class_name"
+            )
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                branches: branchesResult.rows,
+                academicYears: academicYearsResult.rows,
+                studyClasses: classesResult.rows
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
 
 exports.createStudent = async(req, res) => {
     try {
 
         const {
             branch,
+            branch_id,
             register_no,
             full_name,
             gender,
@@ -45,13 +113,17 @@ exports.createStudent = async(req, res) => {
             aadhaar_number,
             admission_date,
             current_academic_year,
+            current_academic_year_id,
             current_class,
+            current_class_id,
             current_section,
             address,
             caste,
             sub_caste,
             admission_academic_year,
+            admission_academic_year_id,
             admission_class,
+            admission_class_id,
             father_name,
             father_qualification,
             father_occupation,
@@ -65,6 +137,86 @@ exports.createStudent = async(req, res) => {
             other_details,
             is_active
         } = req.body;
+
+        const resolvedBranch = await resolveLookupValue({
+            value: branch,
+            id: branch_id,
+            table: "branches",
+            idColumn: "branch_id",
+            valueColumn: "branch_name"
+        });
+
+        const resolvedBranchId = await resolveLookupId({
+            value: branch,
+            id: branch_id,
+            table: "branches",
+            idColumn: "branch_id",
+            valueColumn: "branch_name"
+        });
+
+        const resolvedCurrentAcademicYear = await resolveLookupValue({
+            value: current_academic_year,
+            id: current_academic_year_id,
+            table: "academic_years",
+            idColumn: "academic_year_id",
+            valueColumn: "academic_year"
+        });
+
+        const resolvedCurrentAcademicYearId = await resolveLookupId({
+            value: current_academic_year,
+            id: current_academic_year_id,
+            table: "academic_years",
+            idColumn: "academic_year_id",
+            valueColumn: "academic_year"
+        });
+
+        const resolvedAdmissionAcademicYear = await resolveLookupValue({
+            value: admission_academic_year,
+            id: admission_academic_year_id,
+            table: "academic_years",
+            idColumn: "academic_year_id",
+            valueColumn: "academic_year"
+        });
+
+        const resolvedAdmissionAcademicYearId = await resolveLookupId({
+            value: admission_academic_year,
+            id: admission_academic_year_id,
+            table: "academic_years",
+            idColumn: "academic_year_id",
+            valueColumn: "academic_year"
+        });
+
+        const resolvedCurrentClass = await resolveLookupValue({
+            value: current_class,
+            id: current_class_id,
+            table: "study_classes",
+            idColumn: "id",
+            valueColumn: "class_name"
+        });
+
+        const resolvedCurrentClassId = await resolveLookupId({
+            value: current_class,
+            id: current_class_id,
+            table: "study_classes",
+            idColumn: "id",
+            valueColumn: "class_name"
+        });
+
+        const resolvedAdmissionClass = await resolveLookupValue({
+            value: admission_class,
+            id: admission_class_id,
+            table: "study_classes",
+            idColumn: "id",
+            valueColumn: "class_name"
+        });
+
+        const resolvedAdmissionClassId = await resolveLookupId({
+            value: admission_class,
+            id: admission_class_id,
+            table: "study_classes",
+            idColumn: "id",
+            valueColumn: "class_name"
+        });
 
         // Generate Admission Number
         const countResult = await pool.query(
@@ -91,6 +243,7 @@ exports.createStudent = async(req, res) => {
         const query = `
         INSERT INTO students(
             branch,
+            branch_id,
             admission_no,
             register_no,
             full_name,
@@ -103,13 +256,17 @@ exports.createStudent = async(req, res) => {
             aadhaar_number,
             admission_date,
             current_academic_year,
+            current_academic_year_id,
             current_class,
+            current_class_id,
             current_section,
             address,
             caste,
             sub_caste,
             admission_academic_year,
+            admission_academic_year_id,
             admission_class,
+            admission_class_id,
             father_name,
             father_qualification,
             father_occupation,
@@ -130,7 +287,7 @@ exports.createStudent = async(req, res) => {
             $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
             $11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
             $21,$22,$23,$24,$25,$26,$27,$28,$29,$30,
-            $31,$32,$33
+            $31,$32,$33,$34,$35,$36,$37,$38
 
         )
 
@@ -140,7 +297,8 @@ exports.createStudent = async(req, res) => {
         const normalizedIsActive = normalizeBoolean(is_active);
 
         const values = [
-            branch,
+            resolvedBranch,
+            resolvedBranchId,
             admission_no,
             register_no,
             full_name,
@@ -152,14 +310,18 @@ exports.createStudent = async(req, res) => {
             dob,
             aadhaar_number,
             admission_date,
-            current_academic_year,
-            current_class,
+            resolvedCurrentAcademicYear,
+            resolvedCurrentAcademicYearId,
+            resolvedCurrentClass,
+            resolvedCurrentClassId,
             current_section,
             address,
             caste,
             sub_caste,
-            admission_academic_year,
-            admission_class,
+            resolvedAdmissionAcademicYear,
+            resolvedAdmissionAcademicYearId,
+            resolvedAdmissionClass,
+            resolvedAdmissionClassId,
             father_name,
             father_qualification,
             father_occupation,
@@ -383,6 +545,7 @@ exports.updateStudent = async(req, res) => {
 
         const {
             branch,
+            branch_id,
             register_no,
             full_name,
             gender,
@@ -394,13 +557,17 @@ exports.updateStudent = async(req, res) => {
             aadhaar_number,
             admission_date,
             current_academic_year,
+            current_academic_year_id,
             current_class,
+            current_class_id,
             current_section,
             address,
             caste,
             sub_caste,
             admission_academic_year,
+            admission_academic_year_id,
             admission_class,
+            admission_class_id,
             father_name,
             father_qualification,
             father_occupation,
@@ -414,6 +581,52 @@ exports.updateStudent = async(req, res) => {
             other_details,
             is_active
         } = req.body;
+
+        const hasBranchInput = Object.prototype.hasOwnProperty.call(req.body, "branch") || Object.prototype.hasOwnProperty.call(req.body, "branch_id");
+        const hasCurrentAcademicYearInput = Object.prototype.hasOwnProperty.call(req.body, "current_academic_year") || Object.prototype.hasOwnProperty.call(req.body, "current_academic_year_id");
+        const hasAdmissionAcademicYearInput = Object.prototype.hasOwnProperty.call(req.body, "admission_academic_year") || Object.prototype.hasOwnProperty.call(req.body, "admission_academic_year_id");
+        const hasCurrentClassInput = Object.prototype.hasOwnProperty.call(req.body, "current_class") || Object.prototype.hasOwnProperty.call(req.body, "current_class_id");
+        const hasAdmissionClassInput = Object.prototype.hasOwnProperty.call(req.body, "admission_class") || Object.prototype.hasOwnProperty.call(req.body, "admission_class_id");
+
+        const resolvedBranch = hasBranchInput ? await resolveLookupValue({
+            value: branch,
+            id: branch_id,
+            table: "branches",
+            idColumn: "branch_id",
+            valueColumn: "branch_name"
+        }) : undefined;
+
+        const resolvedCurrentAcademicYear = hasCurrentAcademicYearInput ? await resolveLookupValue({
+            value: current_academic_year,
+            id: current_academic_year_id,
+            table: "academic_years",
+            idColumn: "academic_year_id",
+            valueColumn: "academic_year"
+        }) : undefined;
+
+        const resolvedAdmissionAcademicYear = hasAdmissionAcademicYearInput ? await resolveLookupValue({
+            value: admission_academic_year,
+            id: admission_academic_year_id,
+            table: "academic_years",
+            idColumn: "academic_year_id",
+            valueColumn: "academic_year"
+        }) : undefined;
+
+        const resolvedCurrentClass = hasCurrentClassInput ? await resolveLookupValue({
+            value: current_class,
+            id: current_class_id,
+            table: "study_classes",
+            idColumn: "id",
+            valueColumn: "class_name"
+        }) : undefined;
+
+        const resolvedAdmissionClass = hasAdmissionClassInput ? await resolveLookupValue({
+            value: admission_class,
+            id: admission_class_id,
+            table: "study_classes",
+            idColumn: "id",
+            valueColumn: "class_name"
+        }) : undefined;
 
         let photo = undefined;
 
@@ -437,7 +650,8 @@ exports.updateStudent = async(req, res) => {
             }
         };
 
-        addField("branch", branch);
+        addField("branch", resolvedBranch);
+        addField("branch_id", resolvedBranchId);
         addField("register_no", register_no);
         addField("full_name", full_name);
         addField("gender", gender);
@@ -448,14 +662,18 @@ exports.updateStudent = async(req, res) => {
         addField("dob", dob);
         addField("aadhaar_number", aadhaar_number);
         addField("admission_date", admission_date);
-        addField("current_academic_year", current_academic_year);
-        addField("current_class", current_class);
+        addField("current_academic_year", resolvedCurrentAcademicYear);
+        addField("current_academic_year_id", resolvedCurrentAcademicYearId);
+        addField("current_class", resolvedCurrentClass);
+        addField("current_class_id", resolvedCurrentClassId);
         addField("current_section", current_section);
         addField("address", address);
         addField("caste", caste);
         addField("sub_caste", sub_caste);
-        addField("admission_academic_year", admission_academic_year);
-        addField("admission_class", admission_class);
+        addField("admission_academic_year", resolvedAdmissionAcademicYear);
+        addField("admission_academic_year_id", resolvedAdmissionAcademicYearId);
+        addField("admission_class", resolvedAdmissionClass);
+        addField("admission_class_id", resolvedAdmissionClassId);
         addField("father_name", father_name);
         addField("father_qualification", father_qualification);
         addField("father_occupation", father_occupation);
