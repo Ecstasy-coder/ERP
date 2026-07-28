@@ -4,6 +4,8 @@ CREATE TABLE students (
 
     branch VARCHAR(100) NOT NULL,
 
+    branch_id INTEGER,
+
     admission_no VARCHAR(30) UNIQUE NOT NULL,
 
     register_no VARCHAR(30) UNIQUE NOT NULL,
@@ -28,7 +30,11 @@ CREATE TABLE students (
 
     current_academic_year VARCHAR(30),
 
+    current_academic_year_id INTEGER,
+
     current_class VARCHAR(50),
+
+    current_class_id INTEGER,
 
     current_section VARCHAR(20),
 
@@ -40,7 +46,11 @@ CREATE TABLE students (
 
     admission_academic_year VARCHAR(30),
 
+    admission_academic_year_id INTEGER,
+
     admission_class VARCHAR(50),
+
+    admission_class_id INTEGER,
 
     father_name VARCHAR(150),
 
@@ -127,7 +137,7 @@ CREATE TABLE IF NOT EXISTS payment_types (
 );
 
 -- ==========================================
--- STUDENT FEE DETAILS TABLE transport fee
+-- STUDENT FEE DETAILS TABLE
 -- ==========================================
 
 CREATE TABLE IF NOT EXISTS student_fee_details (
@@ -161,7 +171,7 @@ CREATE TABLE IF NOT EXISTS student_fee_details (
 );
 
 
--- transport fee terms
+
 CREATE TABLE IF NOT EXISTS student_fee_terms (
 
     id SERIAL PRIMARY KEY,
@@ -223,7 +233,52 @@ CREATE TABLE IF NOT EXISTS study_classes (
 
 );
 
--- term fee details table main
+ALTER TABLE students
+    ADD COLUMN IF NOT EXISTS branch_id INTEGER;
+
+ALTER TABLE students
+    ADD COLUMN IF NOT EXISTS current_academic_year_id INTEGER;
+
+ALTER TABLE students
+    ADD COLUMN IF NOT EXISTS current_class_id INTEGER;
+
+ALTER TABLE students
+    ADD COLUMN IF NOT EXISTS admission_academic_year_id INTEGER;
+
+ALTER TABLE students
+    ADD COLUMN IF NOT EXISTS admission_class_id INTEGER;
+
+ALTER TABLE students
+    DROP CONSTRAINT IF EXISTS fk_students_branch;
+ALTER TABLE students
+    ADD CONSTRAINT fk_students_branch
+    FOREIGN KEY (branch_id) REFERENCES branches(branch_id) ON DELETE SET NULL;
+
+ALTER TABLE students
+    DROP CONSTRAINT IF EXISTS fk_students_current_academic_year;
+ALTER TABLE students
+    ADD CONSTRAINT fk_students_current_academic_year
+    FOREIGN KEY (current_academic_year_id) REFERENCES academic_years(academic_year_id) ON DELETE SET NULL;
+
+ALTER TABLE students
+    DROP CONSTRAINT IF EXISTS fk_students_current_class;
+ALTER TABLE students
+    ADD CONSTRAINT fk_students_current_class
+    FOREIGN KEY (current_class_id) REFERENCES study_classes(id) ON DELETE SET NULL;
+
+ALTER TABLE students
+    DROP CONSTRAINT IF EXISTS fk_students_admission_academic_year;
+ALTER TABLE students
+    ADD CONSTRAINT fk_students_admission_academic_year
+    FOREIGN KEY (admission_academic_year_id) REFERENCES academic_years(academic_year_id) ON DELETE SET NULL;
+
+ALTER TABLE students
+    DROP CONSTRAINT IF EXISTS fk_students_admission_class;
+ALTER TABLE students
+    ADD CONSTRAINT fk_students_admission_class
+    FOREIGN KEY (admission_class_id) REFERENCES study_classes(id) ON DELETE SET NULL;
+
+-- term fee details table
 CREATE TABLE IF NOT EXISTS term_fee_details (
 
     term_fee_id SERIAL PRIMARY KEY,
